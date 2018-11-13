@@ -7,13 +7,21 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
 ///// This program is written with the sore purpose of bypassing BKDNOJ //////
-/////  duplicate sources check with the basic mechanic of checking how  //////
+/////  duplicate sources check with the basic mechanism of checking how  /////
 //// data flows, it doesnt care if the name or literal text is different /////
-//// By insert "whitenoise" (redundant self-assigned variable) to random /////
-// after a line of code. It ensures the modified program to run as intended //
-/// although it would cause a big mess if this is a TIME-SENSITIVE problem ///
-/// because variable accesses and assignments in side LOOPs of LOOPs arent ///
-//////////////////////////////// pretty //////////////////////////////////////
+///// Basically, how it works is strip ALL of your variables down to its /////
+//////////// data type only. All reserved words remain the same. /////////////
+//// By insert "whitenoise" (redundant self-assigned variable) to after  /////
+/// a random line of code. It ensures modified program to run as intended  ///
+/// although it would cause a big mess if you are solving a TIME-SENSITIVE ///
+//// problem because redundant variable accesses and assignments in side  ////
+////////////// a big giant nest of loops wouldn't be so pretty. //////////////
+//////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+/// The code takes in your source.cpp "input.cpp", return modified source  ///
+// to the file named "output.cpp" with no double quote marks. You can change//
+/////// the files' name immediately right below this block of comments ///////
 //////////////////////////////////////////////////////////////////////////////
 
 string FILEIN = "input.cpp";
@@ -21,17 +29,17 @@ string FILEOUT = "output.cpp";
 
 ifstream fin ( FILEIN );  // open file
 ofstream fout( FILEOUT ); // set stdout to output a file
-////////////////// VARIABLES ///////////////////
+///////////////////////////////////// VARIABLES //////////////////////////////////////
 string line;
 string appen[4] = {"qwerqwer", "wertwert", "ertyerty", "rtyurtyu"};
 int p[10] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
-////////////////// PROTOTYPES //////////////////
+///////////////////////////////////// PROTOTYPES /////////////////////////////////////
 bool isMain(string s);
 void redund(string st);
+///////////////////////////////////// INITIALIZE /////////////////////////////////////
+bool status, enable = 0;
 
-////////////// INITIALIZE //////////////
-	bool status, enable = 0;
-//////////////////////////// MAIN ////////////////////////////
+/////////////////////////////////////    MAIN    /////////////////////////////////////
 int main() {
 
 	//mt19937 mt_rand(time(0));	// set random seed
@@ -45,8 +53,8 @@ int main() {
 	     	status = isMain(line); 	// Check if current line define main(){}
 
 	     	if(status){			
-	//If main() is found, in every other line of sources.cpp the script 
-	//will try to insert noises to increase contrast of the two source files.
+	//If main() is found, in every other line of sources.cpp the script, it
+	//will try to insert noises to increase contrast between original and modified file.
 	     		fout << "\nchar qwerqwer;\nint wertwert;\nlong ertyerty;\nlong long rtyurtyu;\n";
 	     		fout << line << "\n";
 	     		enable = 1;
@@ -64,6 +72,7 @@ int main() {
 	cout << "Process ended.\n";
 	return 0;
 }
+/////////////////////////////////////   END MAIN   /////////////////////////////////////
 
 bool isMain(string s){
 	long l = s.length()-1;
