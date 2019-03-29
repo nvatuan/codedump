@@ -26,11 +26,14 @@ using namespace std;
 
 ifstream fin ( "a.cpp" );  // open file
 ofstream fout( "codeOut.cpp" ); // set stdout to output a file
-int LEVEL = 255;
+int SEED = 255;
 ///////////////////////////////////// VARIABLES //////////////////////////////////////
 string line;
 string appen[4] = {"qwerqwer", "wertwert", "ertyerty", "rtyurtyu"};
-string preser[9] = {"for(;3<1;);", "for(int xxxx;3<1;);", "for(;999<1;);", "if(0){};", "if(0){}\nelse{};", "while(0){};", "while(NULL){};", "while(0){};", "do{}while(0);"};
+string preser[9] =  {
+    "for(;3<1;);", "for(int xxxx;3<1;);", "for(;999<1;);", "if(0){};", "if(0){}\n    else{};",
+    "while(0){};", "while(NULL){};", "while(0){};", "do{}while(0);"
+                    };
 int p[10] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
 ///////////////////////////////////// PROTOTYPES /////////////////////////////////////
 bool isMain(string s);
@@ -77,9 +80,9 @@ bool isMain(string s){
 
 	FOR(i, 0, l-3){
 		if(
-			((s[i] == 'm')  ||(s[i] == 'M'))  &&
-			((s[i+1] == 'a')||(s[i+1] == 'A'))&&
-			((s[i+2] == 'i')||(s[i+2] == 'I'))&&
+			((s[i]   == 'm')||(s[i]   == 'M')) &&
+			((s[i+1] == 'a')||(s[i+1] == 'A')) &&
+			((s[i+2] == 'i')||(s[i+2] == 'I')) &&
 			((s[i+3] == 'n')||(s[i+3] == 'N'))
           )
 		{
@@ -95,33 +98,43 @@ bool isMain(string s){
 void redund(string st){
 	long l = st.length()-1;
 	long x;
-	string spc = "    ";
+	string spc = "        ";
 
 	BAC(i, l, 0){
 		if(st[i]==' ') continue;
 		if(st[i]==';'){
 			fout << line;
 			
-            x = (rand() % LEVEL) + 1;
+            x = (rand() % SEED) + 1;
 
             int y;
 			do{
+                y = (rand() % x + 1);
                 switch(rand()%4){
                     case 3:
-                        y = (rand() % x + 1);
-                        while(y--) {fout << ";"; }
+                        while(y > 0) {
+                            fout << ";"; 
+                            y -= (rand() % y + 1);
+                        }
                         break;
                     case 2:
-                        y = (rand() % x + 1);
-                        while(y--) {fout << '\n' << spc << preser[ rand() % 9 ];}
+                        while(y > 0) {
+                            fout << '\n' << spc << preser[ rand() % 9 ];
+                            y -= (rand() % y + 1);
+                        }
                         break;
                     case 1:
-                        y = (rand() % 4);
-                        fout << "\n" << spc << appen[y] << "=" << appen[y] << ";";
+                        while(y > 0){
+                            fout << "\n" << spc
+                                 << appen[rand() % 4] << "=" << appen[rand() % 4] << ";";
+                            y -= (rand() % y + 1);
+                        }
                         break;
                     case 0:
-                        y = (rand() % 4);
-                        fout << "\n" << spc << appen[y] << "=" << rand() << ";";
+                        while(y > 0){
+                            fout << "\n" << spc << appen[y] << "=" << rand() << ";";
+                            y -= (rand() % y + 1);
+                        }
                         break;
                 }				
 				x -= (rand() % x + 1);
