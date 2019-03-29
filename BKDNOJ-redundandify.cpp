@@ -7,7 +7,7 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
 ///// This program is written with the sore purpose of bypassing BKDNOJ //////
-/////  duplicate sources check with the basic mechanism of checking how  /////
+///// content plagiarism check with the basic mechanism of checking how  /////
 //// data flows, it doesnt care if the name or literal text is different /////
 ///// Basically, how it works is strip ALL of your variables down to its /////
 //////////// data type only. All reserved words remain the same. /////////////
@@ -24,11 +24,8 @@ using namespace std;
 /////// the files' name immediately right below this block of comments ///////
 //////////////////////////////////////////////////////////////////////////////
 
-string FILEIN  = "a.cpp";
-string FILEOUT = "codeOut.cpp";
-
-ifstream fin ( FILEIN );  // open file
-ofstream fout( FILEOUT ); // set stdout to output a file
+ifstream fin ( "a.cpp" );  // open file
+ofstream fout( "codeOut.cpp" ); // set stdout to output a file
 int LEVEL = 255;
 ///////////////////////////////////// VARIABLES //////////////////////////////////////
 string line;
