@@ -24,14 +24,16 @@ using namespace std;
 /////// the files' name immediately right below this block of comments ///////
 //////////////////////////////////////////////////////////////////////////////
 
-string FILEIN = "input.cpp";
-string FILEOUT = "output.cpp";
+string FILEIN  = "a.cpp";
+string FILEOUT = "codeOut.cpp";
 
 ifstream fin ( FILEIN );  // open file
 ofstream fout( FILEOUT ); // set stdout to output a file
+int LEVEL = 255;
 ///////////////////////////////////// VARIABLES //////////////////////////////////////
 string line;
 string appen[4] = {"qwerqwer", "wertwert", "ertyerty", "rtyurtyu"};
+string preser[9] = {"for(;3<1;);", "for(int xxxx;3<1;);", "for(;999<1;);", "if(0){};", "if(0){}\nelse{};", "while(0){};", "while(NULL){};", "while(0){};", "do{}while(0);"};
 int p[10] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
 ///////////////////////////////////// PROTOTYPES /////////////////////////////////////
 bool isMain(string s);
@@ -42,17 +44,15 @@ bool status, enable = 0;
 /////////////////////////////////////    MAIN    /////////////////////////////////////
 int main() {
 
-	//mt19937 mt_rand(time(0));	// set random seed
 	srand(time(0));
 
-	if (fin.is_open()){			// Check if file is opened, true then do
-	    while (! fin.eof() )	// Do if it's not the end of the file
+	if (fin.is_open()){			    // Check if file is opened, true then do
+	    while (! fin.eof() )	    // Do if it's not the end of the file
 	    {
-
-	     	getline(fin,line);		// Get data per lines
+	     	getline(fin, line);		// Get data per lines
 	     	status = isMain(line); 	// Check if current line define main(){}
 
-	     	if(status){			
+	     	if(status){
 	//If main() is found, in every other line of sources.cpp the script, it
 	//will try to insert noises to increase contrast between original and modified file.
 	     		fout << "\nchar qwerqwer;\nint wertwert;\nlong ertyerty;\nlong long rtyurtyu;\n";
@@ -80,10 +80,11 @@ bool isMain(string s){
 
 	FOR(i, 0, l-3){
 		if(
-			((s[i] == 'm')||(s[i] == 'M'))&&
+			((s[i] == 'm')  ||(s[i] == 'M'))  &&
 			((s[i+1] == 'a')||(s[i+1] == 'A'))&&
 			((s[i+2] == 'i')||(s[i+2] == 'I'))&&
-			((s[i+3] == 'n')||(s[i+3] == 'N')))
+			((s[i+3] == 'n')||(s[i+3] == 'N'))
+          )
 		{
 				j = i+4;
 				while(s[j] == ' '){ j++; }
@@ -97,22 +98,36 @@ bool isMain(string s){
 void redund(string st){
 	long l = st.length()-1;
 	long x;
-	int rr;
 	string spc = "    ";
 
 	BAC(i, l, 0){
 		if(st[i]==' ') continue;
-		if(/*(st[i]=='}')||*/(st[i]==';')){
+		if(st[i]==';'){
 			fout << line;
 			
-			x = p[(rand()%10)];
+            x = (rand() % LEVEL) + 1;
 
+            int y;
 			do{
-				rr = ((rand())%4);
-				fout << "\n"<<spc<<appen[rr]<<" = "<<appen[rr]<<";";
-				//x = rand() % x;
-				x--;
-				//iii++;
+                switch(rand()%4){
+                    case 3:
+                        y = (rand() % x + 1);
+                        while(y--) {fout << ";"; }
+                        break;
+                    case 2:
+                        y = (rand() % x + 1);
+                        while(y--) {fout << '\n' << spc << preser[ rand() % 9 ];}
+                        break;
+                    case 1:
+                        y = (rand() % 4);
+                        fout << "\n" << spc << appen[y] << "=" << appen[y] << ";";
+                        break;
+                    case 0:
+                        y = (rand() % 4);
+                        fout << "\n" << spc << appen[y] << "=" << rand() << ";";
+                        break;
+                }				
+				x -= (rand() % x + 1);
 			} while(x > 0);
 
 			fout << "\n";
