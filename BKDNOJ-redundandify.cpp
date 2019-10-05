@@ -68,7 +68,7 @@ int main() {
 		}
 		fin.close();					// FILE.CLOSE
 	}
-	else cout << "Unable to open file";	// FILE NOT FOUND OR NO PERMISSION
+	else cout << "Unable to open file.";	// FILE NOT FOUND OR NO PERMISSION
 	cout << "Process ended.\n";
 	return 0;
 }
@@ -132,7 +132,7 @@ void redund(string st){
                         break;
                     case 0:
                         while(y > 0){
-                            fout << "\n" << spc << appen[y] << "=" << rand() << ";";
+                            fout << "\n" << spc << appen[y%4] << "=" << rand() << ";";
                             y -= (rand() % y + 1);
                         }
                         break;
