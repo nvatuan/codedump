@@ -1,8 +1,10 @@
 #!/bin/bash
 
+## GLOBAL VAR
+FILE='question.txt'
+
 random_line_val=0
 function random_line_generate {
-	FILE='question.txt'
 	linecount=$(wc -l < $FILE)
 	questioncount=$(expr $linecount '/' 6)
 	
@@ -42,8 +44,6 @@ function question_array_generate {
 }
 
 function show_question {
-	FILE='question.txt'
-
 	firstline=$( expr $1 '*' 6 - 5)
 	lastline=$( expr $firstline + 5)
 
@@ -54,17 +54,19 @@ function show_question {
 	optionD=$(head -n $(expr $firstline + 4) $FILE | tail -n 1);
 	answer=$(head -n $(expr $firstline + 5) $FILE | tail -n 1);
 	
-	choice=$(zenity --text="$question" --list --radiolist --column "" --column "Lua chon" FALSE $optionA FALSE $optionB FALSE $optionC FALSE $optionD)
-	if [[ "$choice" != "$answer" ]]
+	choice=$(zenity --text="$question" --list --radiolist --column "" --column "Lua chon" FALSE "$optionA" FALSE "$optionB" FALSE "$optionC" FALSE "$optionD")
+	if [[ "$choice" !=  "$answer" ]]
 	then
-		zenity --warning --no-wrap --title "Gameover" \
-			--text="<span weight='bold' foreground='red'>\nBan da khong tro thanh trieu phu!</span>"
+		zenity --notification --text="wrong"
+
+		#zenity --warning --no-wrap --title "Gameover" \
+			#--text="<span weight='bold' foreground='red'>\nBan da khong tro thanh trieu phu!</span>"
 		# them con diem
-		exit 0
+		#exit 0
 	else
 		correct=$(expr $correct + 1)
 		score=$(expr $correct '*' 10)
-		zenity --notification --text="Ban da tra loi dung! Ban dang co $score."
+		zenity --notification --text="Ban da tra loi dung! Ban dang co $score diem."
 	fi
 }
 
@@ -72,17 +74,79 @@ player="Player"
 correct=0
 function play {
 	## Ten
-	#player=$(zenity --entry --text="Chao mung ban den voi Ai La Trieu Phu.\n Xin hay nhap ten cua ban:")
-	echo $player
+	player=$(zenity --entry --text="Xin hay nhap ten cua ban:")
+	echo "Ban la $player"
 	
-	##
-	#show_question 2
+	#show_question 5
 	#get_random_line
-	question_array_generate 5
+	question_array_generate 15
 	for q_value in "${question_array[@]}"
 	do
 		show_question $q_value
 	done
 }
 
-play
+function add_question {
+	OUTPUT=$(zenity --forms --title "Add Question"\
+		--text='Input your Question'\
+		--add-entry="Question:"\
+		--add-entry="A:"\
+		--add-entry="B:"\
+		--add-entry="C:"\
+		--add-entry="D:"\
+		--add-entry="Answer:")
+	IFS='|'
+	arr=()
+	read -ra ADDR <<<"$OUTPUT" 
+	for i in 0 1 2 3 4 5; 
+	do  
+		if [ -z "${ADDR[i]}" ]; then
+		zenity --warning --text="Empty Input!" --width=300
+			return 0
+		fi
+		arr[i]=${ADDR[i]}
+	done
+	if [ ${arr[5]} = 'A' ] || [ ${arr[5]} = 'B' ] || \
+	[ ${arr[5]} = 'C' ] || [ ${arr[5]} = 'D' ] || \
+	[ ${arr[5]} = 'a' ] || [ ${arr[5]} = 'b' ] || \
+	[ ${arr[5]} = 'c' ] || [ ${arr[5]} = 'd' ]; then
+	{
+		echo ${arr[0]} >> $FILE
+		echo ${arr[1]} >> $FILE
+		echo ${arr[2]} >> $FILE
+		echo ${arr[3]} >> $FILE
+		echo ${arr[4]} >> $FILE
+		if [ ${arr[5]} = 'A' ] || [ ${arr[5]} = 'a' ];
+		then 
+			echo ${arr[1]} >> $FILE
+		fi
+		if [ ${arr[5]} = 'B' ] || [ ${arr[5]} = 'b' ];
+		then 
+			echo ${arr[2]} >> $FILE
+		fi
+		if [ ${arr[5]} = 'C' ] || [ ${arr[5]} = 'c' ];
+		then 
+			echo ${arr[3]} >> $FILE
+		fi
+		if [ ${arr[5]} = 'D' ] || [ ${arr[5]} = 'd' ];
+		then 
+			echo ${arr[4]} >> $FILE
+		fi	
+		zenity --notification --text="Success!"
+		
+	}
+	else
+		zenity --warning --text="Invalid! \nNote: Dap an phai nam trong A B C D hoac a b c d!"\
+		--width=400
+	fi
+}
+
+function menu {
+	choice=$(zenity --title="Ai la Trieu phu?" --text="<b>Chao ban den voi Ai la Trieu phu?. Hay chon lua chon:</b>" --list --radiolist --column "Pick" --column "Option" FALSE "Play" FALSE "Highscore" FALSE "Credit" FALSE "Add more questions..")
+	echo $choice
+	add_question
+	#play
+}
+
+menu
+
