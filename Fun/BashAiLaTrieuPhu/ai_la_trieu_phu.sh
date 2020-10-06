@@ -2,6 +2,7 @@
 
 ## GLOBAL VAR
 FILE='question.txt'
+QUESTION_COUNT=0
 
 random_line_val=0
 function random_line_generate {
@@ -57,12 +58,9 @@ function show_question {
 	choice=$(zenity --text="$question" --list --radiolist --column "" --column "Lua chon" FALSE "$optionA" FALSE "$optionB" FALSE "$optionC" FALSE "$optionD")
 	if [[ "$choice" !=  "$answer" ]]
 	then
-		zenity --notification --text="wrong"
-
-		#zenity --warning --no-wrap --title "Gameover" \
-			#--text="<span weight='bold' foreground='red'>\nBan da khong tro thanh trieu phu!</span>"
-		# them con diem
-		#exit 0
+		zenity --warning --no-wrap --title "Gameover" \
+			--text="<span weight='bold' foreground='red'>\nBan da khong tro thanh trieu phu!</span>"
+		exit 0
 	else
 		correct=$(expr $correct + 1)
 		score=$(expr $correct '*' 10)
@@ -79,11 +77,13 @@ function play {
 	
 	#show_question 5
 	#get_random_line
-	question_array_generate 15
+	question_array_generate $QUESTION_COUNT
 	for q_value in "${question_array[@]}"
 	do
 		show_question $q_value
 	done
+	zenity --info --icon-name="" --no-wrap --title "Chuc mung" \
+		--text="<span weight='bold' foreground='green'>\nBan da chien thang vang doi! ^o^\t\t\t</span>"
 }
 
 function add_question {
@@ -101,7 +101,8 @@ function add_question {
 	for i in 0 1 2 3 4 5; 
 	do  
 		if [ -z "${ADDR[i]}" ]; then
-		zenity --warning --text="Empty Input!" --width=300
+			#zenity --warning --text="Empty Input!" --width=300
+			zenity --notification --text="Cancelled"
 			return 0
 		fi
 		arr[i]=${ADDR[i]}
@@ -144,7 +145,13 @@ function add_question {
 function menu {
 	choice=$(zenity --title="Ai la Trieu phu?" --text="<b>Chao ban den voi Ai la Trieu phu?. Hay chon lua chon:</b>" --list --radiolist --column "Pick" --column "Option" FALSE "Play" FALSE "Highscore" FALSE "Credit" FALSE "Add more questions..")
 	echo $choice
-	add_question
+	case $choice in
+		"Play") play;;
+		"Highscore") return 0;;
+		"Credit") return 0;;
+		"Add more questions..") add_question;;
+		*) return 0;;
+	esac
 	#play
 }
 
