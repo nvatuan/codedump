@@ -1,12 +1,44 @@
 #!/bin/bash
 
-random_line_return=0
-function get_random_line {
+random_line_val=0
+function random_line_generate {
 	FILE='question.txt'
 	linecount=$(wc -l < $FILE)
 	questioncount=$(expr $linecount '/' 6)
 	
-	random_line_return=$(expr $RANDOM '%' $questioncount + 1)
+	random_line_val=$(expr $RANDOM '%' $questioncount + 1)
+}
+
+question_array=()
+function question_array_generate {
+	if [[ $# -gt 0 ]]
+	then
+		amount=$1
+		while [ $amount -ne 0 ]
+		do
+			#echo "Turn no.:" $amount
+			is_unique=true
+
+			random_line_generate
+			# check if the randomed value already exists
+			for q_value in "${question_array[@]}"
+			do
+				#echo "$q_value|$random_line_val"
+				if [[ $q_value == $random_line_val ]]
+				then
+					#echo "Duplicated"
+					is_unique=false
+				       	break
+				fi
+			done
+
+			if $is_unique 
+			then
+				question_array+=($random_line_val)
+				amount=$(expr $amount '-' 1)
+			fi
+		done
+	fi
 }
 
 function show_question {
@@ -37,7 +69,12 @@ function play {
 	echo $player
 	
 	##
-	#$show_question 2
-	get_random_line
+	#show_question 2
+	#get_random_line
+	question_array_generate 3
+	for q_value in "${question_array[@]}"
+	do
+		show_question $q_value
+	done
 }
 play
