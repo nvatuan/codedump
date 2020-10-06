@@ -1,34 +1,34 @@
-Cau hoi 1
+Cau hoi 1, dap an la C
 A
 B
 C
 D
 C
-Cau hoi 2
+Cau hoi 2, dap an la B
 A
 B
 C
 D
 B
-Cau hoi 3
+Cau hoi 3, dap an la C
 A
 B
 C
 D
 A
-Cau hoi 4
+Cau hoi 4, dap an la A
 A
 B
 C
 D
 A
-Cau hoi 5
+Cau hoi 5, dap an la D
 A
 B
 C
 D
 D
-Cau hoi 6
+Cau hoi 6, dap an la B
 A
 B
 C

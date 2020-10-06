@@ -55,14 +55,21 @@ function show_question {
 	answer=$(head -n $(expr $firstline + 5) $FILE | tail -n 1);
 	
 	choice=$(zenity --text="$question" --list --radiolist --column "" --column "Lua chon" FALSE $optionA FALSE $optionB FALSE $optionC FALSE $optionD)
-	if [[ choice != answer ]]
+	if [[ "$choice" != "$answer" ]]
 	then
-		echo 'Game over.'
+		zenity --warning --no-wrap --title "Gameover" \
+			--text="<span weight='bold' foreground='red'>\nBan da khong tro thanh trieu phu!</span>"
+		# them con diem
+		exit 0
 	else
-		echo 'Ban da tra loi dung!'
+		correct=$(expr $correct + 1)
+		score=$(expr $correct '*' 10)
+		zenity --notification --text="Ban da tra loi dung! Ban dang co $score."
 	fi
 }
 
+player="Player"
+correct=0
 function play {
 	## Ten
 	#player=$(zenity --entry --text="Chao mung ban den voi Ai La Trieu Phu.\n Xin hay nhap ten cua ban:")
@@ -71,10 +78,11 @@ function play {
 	##
 	#show_question 2
 	#get_random_line
-	question_array_generate 3
+	question_array_generate 5
 	for q_value in "${question_array[@]}"
 	do
 		show_question $q_value
 	done
 }
+
 play
