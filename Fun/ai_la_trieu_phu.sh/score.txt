@@ -1,0 +1,13 @@
+Phuc	200
+Phuc2	200
+Ly	96
+Player01	10
+Player02	20
+loser	20
+huyrito	0
+huyrito	150
+huyrito	170
+huyrito	0
+huyrito	40
+huyrito	70
+huyrito	9999
