@@ -1,5 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Client for the chat server "Server.java"
@@ -8,7 +11,7 @@ public class Client {
     /**
      * The server ip address.
      */
-    final private String SERVER_IP = "192.168.137.1";
+    final private String SERVER_IP = "localhost";
 
     /**
      * @param socket is the socket that is used to talk with the server.
@@ -20,6 +23,12 @@ public class Client {
     private String username = null;
     private DataOutputStream dos = null; 
     private DataInputStream dis = null;
+
+    /**
+     *  SimpleDateFormat to format timestamp for messages
+     */
+    final private String TIMESTAMPT_FORMAT = "yyyy-MMM-dd HH:mm:ss (z)";
+    SimpleDateFormat sdf;
 
     /**
      * Constructor of a client.
@@ -37,8 +46,19 @@ public class Client {
 
             while (dis.available() <= 0); // wait
             this.username = dis.readUTF();
+
+
+            sdf = new SimpleDateFormat(TIMESTAMPT_FORMAT);
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT+7"));
         } finally {
         }
+    }
+
+    public void closeClient() {
+        try {
+            socket.close();
+        } catch(Exception e){}
+        System.exit(0);
     }
 
     /**
@@ -54,20 +74,20 @@ public class Client {
             if (dis.available() > 0) rmsg = dis.readUTF();
             if (rmsg != null) {
                 System.out.println(rmsg);
-                if (rmsg.equals("\\exit")) {
-                    System.out.println("Connection closed by SERVER.");
-                    System.exit(0);
-                    break;
-                }
+                // if (rmsg.equals("\\exit")) {
+                //     System.out.println("Connection closed by SERVER.");
+                //     closeClient();
+                // }
             }
             if (smsg != null) {
-                smsg = this.username + "> " + smsg;
-                dos.writeUTF(smsg);
                 if (smsg.equals("\\exit")) {
                     System.out.println("Connection closed by YOU.");
-                    System.exit(0);
-                    break;
+                    closeClient();
                 }
+
+                String timestampt = sdf.format(new Date());
+                smsg = "["+timestampt+"] " + this.username + "> " + smsg;
+                dos.writeUTF(smsg);
             }
         }
     }

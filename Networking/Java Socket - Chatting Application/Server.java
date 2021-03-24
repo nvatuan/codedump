@@ -1,9 +1,10 @@
 import java.io.*;
 import java.net.*;
+
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * A chat program server - Run on 2 threads (instead of multi-threaded) because `ServerSocket.accept()` is blocking, can serve multiple clients.
@@ -21,7 +22,8 @@ public class Server {
      * HashMap<> to convert a username to resources dedicated to that user. Every user shall have distinct username,
      * if not, the server will try to find a distinct name for that user.
      */
-    private HashMap<String, Integer> userList = new HashMap<String, Integer>();
+    // private HashMap<String, Integer> userList = new HashMap<String, Integer>();
+    private HashSet<String> userList = new HashSet<String>();
     private HashMap<String, Socket> userToServer = new HashMap<String, Socket>();
 
     private HashMap<String, DataOutputStream> userToDOS = new HashMap<String, DataOutputStream>();
@@ -43,9 +45,12 @@ public class Server {
     synchronized public void refresh_chat() throws IOException {
         LinkedList<String> new_msg = new LinkedList<String>();
         for (String username : userToServer.keySet()) {
-            if (userToDIS.get(username).available() > 0) {
-                String msg = userToDIS.get(username).readUTF();
-                new_msg.add(msg);
+            try {
+                if (userToDIS.get(username).available() > 0) {
+                    String msg = userToDIS.get(username).readUTF();
+                    new_msg.add(msg);
+                }
+            } catch (Exception e) {
             }
         }
 
@@ -61,7 +66,7 @@ public class Server {
                     System.err.println("!! Force closing connection of user<" + username +">");
                     userToServer.get(username).close();
                     // e.printStackTrace();
-                    System.err.println("----------------------------------------------------------\n");
+                    System.err.println("----------------------------------------------------------");
                 }
             }
         }
@@ -90,7 +95,7 @@ public class Server {
                     System.err.println("!! Force closing connection of user<" + username +">");
                     userToServer.get(username).close();
                     // e.printStackTrace();
-                    System.err.println("----------------------------------------------------------\n");
+                    System.err.println("----------------------------------------------------------");
                 }
             }
         }
@@ -102,7 +107,7 @@ public class Server {
      */
     synchronized public void refresh_active_list() throws IOException {
         LinkedList<String> toBeRemoved = new LinkedList<String>();
-        for (String username : userToServer.keySet()) {
+        for (String username : userList) {
             if (userToServer.get(username).isClosed()) {
                 System.err.println(">> Found user <"+username+">'s connection has been closed. Removing..");
                 toBeRemoved.add(username);
@@ -111,27 +116,24 @@ public class Server {
 
         LinkedList<String> annoucements = new LinkedList<String>();
         while (! toBeRemoved.isEmpty()) {
-            String username = toBeRemoved.pop();
+            String dc_username = toBeRemoved.pop();
             try {
-                userToDIS.get(username).close();
-                userToDOS.get(username).close();
-                userToDIS.remove(username);
-                userToDOS.remove(username);
-                userToServer.remove(username);
+                userToDIS.get(dc_username).close();
+                userToDOS.get(dc_username).close();
+                userToDIS.remove(dc_username);
+                userToDOS.remove(dc_username);
+                userToServer.remove(dc_username);
                 
-                String original_name = username.substring(0,
-                    username.lastIndexOf(" ")
-                );
+                if (userList.contains(dc_username)) userList.remove(dc_username);
 
-                userList.put(original_name, userList.get(original_name)-1);
-
-                String annc = "[-] User <"+username+"> has disconnected.";
+                String annc = "[-] User <"+dc_username+"> has disconnected.";
                 System.out.println(annc);
                 annoucements.add(annc);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
         annouce(annoucements, false);
     }
 
@@ -142,8 +144,6 @@ public class Server {
      * 
      * @param server_socket The socket on the server that is dediciated to the new client.
      * @throws IOException
-     * @bug If 3 Johns joined the server, they will received "John", "John (1)", "John (2)" respectively. This works because the server is keeping a counter on each username string. But if "John (1)" disconnected, that counter will be decreased to 2 (formally 3), and if a new John connects, he will be given "John (2)" again, duplicate with another existing user.
-     * @TODO For the bug above, Use the `mex` (minimum exclusive) operation to find the next numbering for the user with the same desired name. 
      */
     synchronized public void registerNewClient(Socket server_socket) throws IOException {
         DataInputStream dis = null;
@@ -153,29 +153,37 @@ public class Server {
 
         System.err.println("> Waiting for client to send username.");
         while (dis.available() <= 0) ; // wait
-        System.err.println("> User name received.");
+
+        System.err.print("> User name received. ");
         String client_name = dis.readUTF();
-        System.err.println("> username=" + client_name);
+        System.err.println("$username=" + client_name);
 
-        if (userList.get(client_name) == null) {
-            userList.put(client_name, 0);
+        // Finding the right postfix for client_name
+        int cnt = 0;
+        String postfix = "";
+        while (userList.contains(client_name + postfix)) {
+            cnt += 1;
+            postfix = " (" + cnt + ")";
         }
-        int cnt = userList.get(client_name);
-        userList.put(client_name, cnt+1);
+        System.err.println("> Final username is <" + client_name + postfix + ">");
 
-        String registered_name;
-        if (cnt == 0) registered_name = client_name;
-        else registered_name = client_name + " (" + cnt + ")";
+        // Storing them in registered_name and put it to the set
+        String registered_name = client_name + postfix;
+        userList.add(registered_name);
 
+        // Return it to client
         dos = new DataOutputStream(server_socket.getOutputStream());
         dos.writeUTF(registered_name);
         
+        // Registering the new client resources
         userToServer.put(registered_name, server_socket);
         userToDOS.put(registered_name, dos);
         userToDIS.put(registered_name, dis);
 
+        // Output to server screen
         System.out.println("[*] Connected to " + server_socket.getRemoteSocketAddress() + " as user <"+ registered_name +">");
 
+        // Construct the annoucement for the new client's arrival.
         String annc = "[+] User <"+registered_name+"> has just connected.";
         annouce(new LinkedList<String>(Arrays.asList(annc)), false);
     }
@@ -208,11 +216,15 @@ public class Server {
 
         registering_thread.start();
         while (true) {
-            // System.out.println(">> Refreshing chat..");
-            this.refresh_chat();
-            // System.out.println(">> Refreshing active list..");
-            this.refresh_active_list();
-            Thread.sleep(1000);
+            try {
+                // System.out.println(">> Refreshing chat..");
+                this.refresh_chat();
+                // System.out.println(">> Refreshing active list..");
+                this.refresh_active_list();
+                Thread.sleep(1000);
+            } catch (Exception e) {
+
+            }
         }
     }
 
